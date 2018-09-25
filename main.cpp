@@ -46,5 +46,10 @@ void showQueueTime(int & time) {
 	cout << "\nTiempo Quantum: " << time << " /s";
 }
 
-void pushBack(Node *& lista);
-Node * popFront(Node *& lista);
+void pushBack(Node *& lista) {
+	//TODO
+}
+
+Node * popFront(Node *& lista) {
+	//TODO
+}
