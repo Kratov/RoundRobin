@@ -47,11 +47,11 @@ int pedirNumero()
 {
 	int num = 0;
 	do {
-		cin.ignore();
 		cin.clear();
+		cin.ignore();
 		printf("\n	Ingrese numero: ");
 		cin >> num;
-	} while (cin.fail());
+	} while (cin.fail() || num < 0);
 	return num;
 }
 
@@ -134,7 +134,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 void showList(Node * cabeza, Node * fin) {
 	Node * aux = cabeza;
 	bool continuar = true;
-	while (continuar)
+	while (continuar && cabeza)
 	{
 		cout <<"	" << aux->processTime << "	";
 		if (aux == fin)
