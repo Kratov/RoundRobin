@@ -6,12 +6,13 @@ using namespace std;
 
 struct Node {
 	int processTime;
+	int nodeArrival;
 	Node * next;
 	bool bDelete;
 };
 
 void showElapsedTime(const int elapsedTime);
-void showList(Node * cabeza, Node * fin);
+void showList(Node * cabeza, Node * fin, bool useNames = false);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(int & time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
@@ -19,11 +20,16 @@ void pushBack(Node *& cabeza, Node *& fin , Node *& item);
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
-char mainMenu()
+int mainMenu()
 {
-	char temp = '0';
+	int temp = -1;
 	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos	\n	3. Simular	\n	0. Salir\n	Seleccion: ");
-	scanf(" %c", &temp);
+	cin >> temp;
+	if (cin.fail())
+	{
+		cin.clear();
+		cin.ignore();
+	}
 	return temp;
 }
 
@@ -43,15 +49,15 @@ bool seguirIngresando()
 	} while (temp != 'Y' || temp != 'N');
 }
 
-int pedirNumero()
+int pedirNumero(int minNumero)
 {
 	int num = 0;
 	do {
 		cin.clear();
-		cin.ignore();
+		cin.ignore(256,'\n');
 		printf("\n	Ingrese numero: ");
 		cin >> num;
-	} while (cin.fail() || num < 0);
+	} while (cin.fail() || num < minNumero);
 	return num;
 }
 
@@ -59,7 +65,7 @@ int main()
 {
 	Node * cabeza = NULL;
 	Node * fin = NULL;
-	char op = '0';
+	int op = '0';
 	int nNodos = 0;
 	int elapsedTime = 0;
 	int queueTime = 0;
@@ -82,38 +88,39 @@ int main()
 		}
 		switch (op = mainMenu())
 		{
-		case '1':
+		case 1:
 			cout << "	Ingrese tiempo de procesamiento Quantum. ";
-			queueTime = pedirNumero();
+			queueTime = pedirNumero(1);
 			break;
-		case '2':
+		case 2:
 		{
 			cout << "	Ingrese tiempo de nuevo proceso. ";
-			Node * item = createNode(pedirNumero(), ++nNodos);
+			Node * item = createNode(pedirNumero(1), ++nNodos);
 			pushBack(cabeza, fin, item);
 		}
 			break;
-		case '3':
+		case 3:
 			initializeSimulation(cabeza, fin, queueTime, elapsedTime, nNodos);
-			break;
-		case '4':
-			printf("\n	============ POSTORDER ============	\n\n");
-			
-			printf("\n\n	============ FIN POSTORDER ============	\n\n");
 			break;
 		}
 		printf("\n");
 		system("PAUSE");
-	} while (op != '0');
-	system("PAUSE");
+	} while (op != 0);
 	return 0;
 }
 
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos) {
+	
+	if (quantumTime <= 0)
+	{
+		cout << "\n	Debe ingresar un timepo para procesar Quantum.\n	";
+		return;
+	}
+
 	if (cabeza)
 	{
 		printf("\n	========================	\n");
-		showList(cabeza, fin);
+		showList(cabeza, fin, true);
 		printf("\n	========================	\n");
 	}
 	else {
@@ -135,19 +142,27 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 			if (cabeza)
 			{
 				printf("\n	========================	\n");
-				showList(cabeza, fin);
+				showList(cabeza, fin, true);
 				printf("\n	========================	\n");
 			}
 		}
 	}
 }
 
-void showList(Node * cabeza, Node * fin) {
+void showList(Node * cabeza, Node * fin, bool useNames) {
 	Node * aux = cabeza;
 	bool continuar = true;
 	while (continuar && cabeza)
 	{
-		cout <<"	" << aux->processTime << "	";
+		if (useNames)
+			cout << "	" << "P" << aux->nodeArrival << "(";
+		else
+			cout << "	";
+		cout << aux->processTime;
+		if (useNames)
+			cout << ")	";
+		else
+			cout << "	";
 		if (aux == fin)
 			continuar = false;
 		aux = aux->next;
@@ -219,6 +234,7 @@ Node * createNode(const int processTime, int nodeNumber)
 	Node * nuevo = (Node *)malloc(sizeof(Node));
 	nuevo->bDelete = false;
 	nuevo->next = NULL;
+	nuevo->nodeArrival = nodeNumber;
 	nuevo->processTime = processTime;
 	return nuevo;
 }
