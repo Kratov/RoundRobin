@@ -4,6 +4,8 @@
 
 using namespace std;
 
+constexpr int MIN_NUMBER = 1;
+
 struct Node {
 	int processTime;
 	int nodeArrival;
@@ -72,11 +74,11 @@ int main()
 
 	do {
 		system("CLS");
-		if (cabeza || queueTime > 0 || elapsedTime) {
+		if (cabeza || queueTime >= MIN_NUMBER || elapsedTime) {
 			printf("\n	============ PARAMETROS LISTA ROUND ROBBIN ============	\n\n");
-			if (queueTime > 0)
+			if (queueTime >= MIN_NUMBER)
 				showQueueTime(queueTime);			
-			if (elapsedTime > 0)
+			if (elapsedTime >= MIN_NUMBER)
 				showElapsedTime(elapsedTime);
 			if (cabeza)
 			{
@@ -90,12 +92,12 @@ int main()
 		{
 		case 1:
 			cout << "	Ingrese tiempo de procesamiento Quantum. ";
-			queueTime = pedirNumero(1);
+			queueTime = pedirNumero(MIN_NUMBER);
 			break;
 		case 2:
 		{
 			cout << "	Ingrese tiempo de nuevo proceso. ";
-			Node * item = createNode(pedirNumero(1), ++nNodos);
+			Node * item = createNode(pedirNumero(MIN_NUMBER), ++nNodos);
 			pushBack(cabeza, fin, item);
 		}
 			break;
@@ -113,7 +115,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	
 	if (quantumTime <= 0)
 	{
-		cout << "\n	Debe ingresar un timepo para procesar Quantum.\n	";
+		cout << "\n	Debe ingresar un tiempo para procesar Quantum.\n	";
 		return;
 	}
 
@@ -126,6 +128,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	else {
 		cout << "\n	No existen procesos a simular.\n";
 	}
+
 	while (nNodos > 0 && cabeza)
 	{
 		burstNodeTime(cabeza, elapsedTime, quantumTime);
