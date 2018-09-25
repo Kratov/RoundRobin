@@ -4,7 +4,6 @@
 using namespace std;
 
 struct Node {
-	int id;
 	string name;
 	int processTime;
 	Node * next;
@@ -14,8 +13,9 @@ struct Node {
 void showElapsedTime(const int elapsedTime);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(int & time);
-void pushBack(Node *& lista);
-Node * popFront(Node *& lista);
+void pushBack(Node *& cabeza, Node *& item);
+Node * createNode(const string name, const int processTime, int nodeNumber);
+Node popFront(Node *& cabeza);
 
 int main() 
 {
@@ -42,14 +42,50 @@ void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
 	}
 }
 
-void showQueueTime(int & time) {
+void showQueueTime(int & time) 
+{
 	cout << "\nTiempo Quantum: " << time << " /s";
 }
 
-void pushBack(Node *& lista) {
-	//TODO
+
+void pushBack(Node *& cabeza, Node *& item) {
+	if (!cabeza) 
+		cabeza = item;
+	else
+	{
+		Node * aux = cabeza;
+		while (aux->next != cabeza) 
+			aux = aux->next;
+		aux->next = item;
+	}
+	item->next = cabeza;
 }
 
-Node * popFront(Node *& lista) {
-	//TODO
+Node popFront(Node *& cabeza) 
+{
+	Node * aux = cabeza;
+	Node front = *cabeza;
+
+	if (!cabeza) 
+	{
+		if (aux->next != cabeza)
+		{
+			cabeza = aux->next;
+			while (aux->next != cabeza)
+				aux = aux->next;
+			aux->next = cabeza;
+		}
+		delete aux;
+	}
+	return front;
+}
+
+Node * createNode(const string name, const int processTime, int nodeNumber)
+{
+	Node * nuevo = (Node *)malloc(sizeof(Node));
+	nuevo->bDelete = false;
+	nuevo->next = NULL;
+	nuevo->processTime = processTime;
+	nuevo->name = "Process #" + nodeNumber;
+	return nuevo;
 }
