@@ -66,13 +66,18 @@ int main()
 
 	do {
 		system("CLS");
-		if (cabeza) {
+		if (cabeza || queueTime > 0 || elapsedTime) {
 			printf("\n	============ PARAMETROS LISTA ROUND ROBBIN ============	\n\n");
-			showQueueTime(queueTime);
-			showElapsedTime(elapsedTime);
-			cout << "\n	====== Lista ======\n\n";
-			showList(cabeza, fin);
-			cout << "\n\n	====== Fin Lista ======\n\n";
+			if (queueTime > 0)
+				showQueueTime(queueTime);			
+			if (elapsedTime > 0)
+				showElapsedTime(elapsedTime);
+			if (cabeza)
+			{
+				cout << "\n	====== Lista de procesos ======\n\n";
+				showList(cabeza, fin);
+				cout << "\n\n	====== Fin Lista procesos ======\n\n";
+			}
 			printf("\n	============ FIN PARTAMETROS ROUND ROBIN ============	\n\n");
 		}
 		switch (op = mainMenu())
@@ -105,9 +110,15 @@ int main()
 }
 
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos) {
-	printf("\n	========================	\n");
-	showList(cabeza, fin);
-	printf("\n	========================	\n");
+	if (cabeza)
+	{
+		printf("\n	========================	\n");
+		showList(cabeza, fin);
+		printf("\n	========================	\n");
+	}
+	else {
+		cout << "\n	No existen procesos a simular.\n";
+	}
 	while (nNodos > 0 && cabeza)
 	{
 		burstNodeTime(cabeza, elapsedTime, quantumTime);
