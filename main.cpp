@@ -65,12 +65,10 @@ int pedirNumero(int minNumero)
 
 int main() 
 {
-	Node * cabeza = NULL;
-	Node * fin = NULL;
-	int op = '0';
-	int nNodos = 0;
-	int elapsedTime = 0;
-	int queueTime = 0;
+	Node * cabeza, *fin;
+	cabeza = fin = NULL;
+	int op, elapsedTime, nNodos, queueTime;
+	elapsedTime = nNodos = queueTime = op = 0;
 
 	do {
 		system("CLS");
