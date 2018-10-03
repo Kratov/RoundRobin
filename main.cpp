@@ -19,13 +19,15 @@ void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(int & time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
 void pushBack(Node *& cabeza, Node *& fin , Node *& item);
+void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest);
+void freeList(Node *& cabeza, Node *& fin);
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
 int mainMenu()
 {
 	int temp = -1;
-	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos	\n	3. Simular	\n	0. Salir\n	Seleccion: ");
+	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos \n	3. Limpiar lista	\n	4. Simular	\n	0. Salir\n	Seleccion: ");
 	cin >> temp;
 	if (cin.fail())
 	{
@@ -49,10 +51,10 @@ int pedirNumero(int minNumero)
 
 int main() 
 {
-	Node * cabeza, *fin;
-	cabeza = fin = NULL;
-	int op, elapsedTime, nNodos, queueTime;
-	elapsedTime = nNodos = queueTime = op = 0;
+	Node * cabeza, *fin, *cabezaCopia, *finCopia;
+	cabeza = fin = cabezaCopia = finCopia = NULL;
+	int op, elapsedTime, nNodos, nNodosCopia, queueTime;
+	elapsedTime = nNodos = nNodosCopia = queueTime = op = 0;
 
 	do {
 		system("CLS");
@@ -84,7 +86,13 @@ int main()
 		}
 			break;
 		case 3:
-			initializeSimulation(cabeza, fin, queueTime, elapsedTime, nNodos);
+			nNodos = 0;
+			freeList(cabeza, fin);
+			break;
+		case 4:
+			freeList(cabezaCopia, finCopia);
+			copyList(cabeza, fin, cabezaCopia, finCopia);
+			initializeSimulation(cabezaCopia, finCopia, queueTime, elapsedTime = 0, nNodosCopia = nNodos);
 			break;
 		}
 		printf("\n");
@@ -221,4 +229,22 @@ Node * createNode(const int processTime, int nodeNumber)
 	nuevo->nodeArrival = nodeNumber;
 	nuevo->processTime = processTime;
 	return nuevo;
+}
+
+void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest) {
+	Node * aux = cabezaOri;
+	Node * nuevo = NULL;
+	bool continuar = true;
+	while (continuar && aux) {
+		nuevo = createNode(aux->processTime, aux->nodeArrival);
+		pushBack(cabezaDest, finDest, nuevo);
+		if (aux == finOri)
+			continuar = false;
+		aux = aux->next;
+	}
+}
+
+void freeList(Node *& cabeza, Node *& fin ) {
+	while (cabeza) 
+		delete popFront(cabeza, fin);
 }
