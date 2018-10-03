@@ -35,22 +35,6 @@ int mainMenu()
 	return temp;
 }
 
-bool seguirIngresando()
-{
-	char temp = '0';
-	do {
-		printf("\n	Desea seguir ingresando procesos (Y/N)?	");
-		scanf(" %c", &temp);
-		switch (temp)
-		{
-		case 'Y':
-			return true;
-		case 'N':
-			return false;
-		}
-	} while (temp != 'Y' || temp != 'N');
-}
-
 int pedirNumero(int minNumero)
 {
 	int num = 0;
@@ -81,7 +65,7 @@ int main()
 			if (cabeza)
 			{
 				cout << "\n	====== Lista de procesos ======\n\n";
-				showList(cabeza, fin);
+				showList(cabeza, fin, true);
 				cout << "\n\n	====== Fin Lista procesos ======\n\n";
 			}
 			printf("\n	============ FIN PARTAMETROS ROUND ROBIN ============	\n\n");
@@ -130,8 +114,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	while (nNodos > 0 && cabeza)
 	{
 		burstNodeTime(cabeza, elapsedTime, quantumTime);
-		Node * front = popFront(cabeza, fin);
-		if (front)
+		if (Node * front = popFront(cabeza, fin))
 		{
 			if (front->bDelete)
 			{
@@ -215,14 +198,14 @@ Node * popFront(Node *& cabeza, Node *& fin)
 {
 	Node * aux = cabeza;
 
+	if (cabeza == fin)
+	{
+		cabeza = NULL;
+		fin = NULL;
+	}
+
 	if (cabeza) 
 	{
-		if (cabeza == fin)
-		{
-			cabeza = NULL;
-			fin = NULL;
-			return aux;
-		}
 		cabeza = aux->next;
 		fin->next = cabeza;
 	}
