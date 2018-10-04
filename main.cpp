@@ -112,7 +112,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	if (cabeza)
 	{
-		cout << "Simulacion iniciada";
+		cout << "\n	Simulacion iniciada\n";
 		printf("\n	====== Procesando elementos ======	\n");
 		showList(cabeza, fin, true);					
 		printf("\n	==================================	\n");
@@ -137,7 +137,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 				pushBack(cabeza, fin, front);  //Si no es verdadero todo el nodo y lo ingreso a la cola
 			if (cabeza)
 			{
-				cout << "Simulacion iniciada";
+				cout << "\n	Simulacion iniciada\n";
 				printf("\n	====== Procesando elementos ======	\n");
 				showList(cabeza, fin, true);			
 		 		//Imprmimo lista despues de modificar
@@ -147,7 +147,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 			}
 		}
 	}
-	cout << "Simulacion terminada";
+	cout << "\n	Simulacion terminada\n";
 }
 
 void showList(Node * cabeza, Node * fin, bool useNames) {
