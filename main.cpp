@@ -1,9 +1,8 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <string>
-#include <stdio.h>      
-#include <stdlib.h> 
 
+#include<iostream>
+#include<string>
+#include<stdlib.h>
+#include<windows.h>
 using namespace std;
 
 const int MIN_NUMBER = 1;
@@ -20,14 +19,16 @@ void showList(Node * cabeza, Node * fin, bool useNames = false);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(int & time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
-void pushBack(Node *& cabeza, Node *& fin, Node *& item);
+void pushBack(Node *& cabeza, Node *& fin , Node *& item);
+void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest);
+void freeList(Node *& cabeza, Node *& fin);
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
 int mainMenu()
 {
 	int temp = -1;
-	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos	\n	3. Simular	\n	0. Salir\n	Seleccion: ");
+	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos \n	3. Limpiar lista	\n	4. Simular	\n	0. Salir\n	Seleccion: ");
 	cin >> temp;
 	if (cin.fail())
 	{
@@ -37,55 +38,37 @@ int mainMenu()
 	return temp;
 }
 
-bool seguirIngresando()
-{
-	char temp = '0';
-	do {
-		printf("\n	Desea seguir ingresando procesos (Y/N)?	");
-		scanf(" %c", &temp);
-		switch (temp)
-		{
-		case 'Y':
-			return true;
-		case 'N':
-			return false;
-		}
-	} while (temp != 'Y' || temp != 'N');
-}
-
 int pedirNumero(int minNumero)
 {
 	int num = 0;
 	do {
 		cin.clear();
-		cin.ignore(256, '\n');
+		cin.ignore(256,'\n');
 		printf("\n	Ingrese numero: ");
 		cin >> num;
 	} while (cin.fail() || num < minNumero);
 	return num;
 }
 
-int main()
+int main() 
 {
-	Node * cabeza = NULL;
-	Node * fin = NULL;
-	int op = '0';
-	int nNodos = 0;
-	int elapsedTime = 0;
-	int queueTime = 0;
+	Node * cabeza, *fin, *cabezaCopia, *finCopia;
+	cabeza = fin = cabezaCopia = finCopia = NULL;
+	int op, elapsedTime, nNodos, nNodosCopia, queueTime;
+	elapsedTime = nNodos = nNodosCopia = queueTime = op = 0;
 
 	do {
 		system("CLS");
 		if (cabeza || queueTime >= MIN_NUMBER || elapsedTime) {
 			printf("\n	============ PARAMETROS LISTA ROUND ROBBIN ============	\n\n");
 			if (queueTime >= MIN_NUMBER)
-				showQueueTime(queueTime);
+				showQueueTime(queueTime);			
 			if (elapsedTime >= MIN_NUMBER)
 				showElapsedTime(elapsedTime);
 			if (cabeza)
 			{
 				cout << "\n	====== Lista de procesos ======\n\n";
-				showList(cabeza, fin);
+				showList(cabeza, fin, true);
 				cout << "\n\n	====== Fin Lista procesos ======\n\n";
 			}
 			printf("\n	============ FIN PARTAMETROS ROUND ROBIN ============	\n\n");
@@ -102,9 +85,15 @@ int main()
 			Node * item = createNode(pedirNumero(MIN_NUMBER), ++nNodos);
 			pushBack(cabeza, fin, item);
 		}
-		break;
+			break;
 		case 3:
-			initializeSimulation(cabeza, fin, queueTime, elapsedTime, nNodos);
+			nNodos = 0;
+			freeList(cabeza, fin);
+			break;
+		case 4:
+			freeList(cabezaCopia, finCopia);
+			copyList(cabeza, fin, cabezaCopia, finCopia);
+			initializeSimulation(cabezaCopia, finCopia, queueTime, elapsedTime = 0, nNodosCopia = nNodos);
 			break;
 		}
 		printf("\n");
@@ -114,7 +103,7 @@ int main()
 }
 
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos) {
-
+	system("cls");	
 	if (quantumTime <= 0)
 	{
 		cout << "\n	Debe ingresar un tiempo para procesar Quantum.\n	";
@@ -123,9 +112,12 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	if (cabeza)
 	{
-		printf("\n	========================	\n");
-		showList(cabeza, fin, true);
-		printf("\n	========================	\n");
+		cout << "Simulacion iniciada";
+		printf("\n	====== Procesando elementos ======	\n");
+		showList(cabeza, fin, true);					
+		printf("\n	==================================	\n");
+		Sleep(1500);
+		system("cls");
 	}
 	else {
 		cout << "\n	No existen procesos a simular.\n";
@@ -133,25 +125,29 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	while (nNodos > 0 && cabeza)
 	{
-		burstNodeTime(cabeza, elapsedTime, quantumTime);
-		Node * front = popFront(cabeza, fin);
-		if (front)
+		burstNodeTime(cabeza, elapsedTime, quantumTime); //Restar cuantum a cabeza
+		if (Node * front = popFront(cabeza, fin)) //Extraer el nodo de la cabeza
 		{
-			if (front->bDelete)
+			if (front->bDelete)   //Si el nodo bDelete = true elimino el nodo
 			{
 				delete front;
-				nNodos--;
+				nNodos--; //Redusco el contador de nodos
 			}
 			else
-				pushBack(cabeza, fin, front);
+				pushBack(cabeza, fin, front);  //Si no es verdadero todo el nodo y lo ingreso a la cola
 			if (cabeza)
 			{
-				printf("\n	========================	\n");
-				showList(cabeza, fin, true);
-				printf("\n	========================	\n");
+				cout << "Simulacion iniciada";
+				printf("\n	====== Procesando elementos ======	\n");
+				showList(cabeza, fin, true);			
+		 		//Imprmimo lista despues de modificar
+				printf("\n	==================================	\n");
+				Sleep(1500);
+				system("cls");
 			}
 		}
 	}
+	cout << "Simulacion terminada";
 }
 
 void showList(Node * cabeza, Node * fin, bool useNames) {
@@ -170,16 +166,18 @@ void showList(Node * cabeza, Node * fin, bool useNames) {
 			cout << "	";
 		if (aux == fin)
 			continuar = false;
+		
+	
 		aux = aux->next;
 	}
 }
 
-void showElapsedTime(const int elapsedTime)
+void showElapsedTime(const int elapsedTime) 
 {
-	cout << "\n	Tiempo transcurrido (Ultima simulacion): " << elapsedTime << " /s\n";
+	cout << "\n	Tiempo transcurrido (Ultima simulacion): "<<elapsedTime<<" /s\n"; 
 }
 
-void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
+void burstNodeTime(Node * item, int & elapsedTime, const int queueTime) 
 {
 	if (item)
 		if (queueTime >= item->processTime)
@@ -195,7 +193,7 @@ void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
 		}
 }
 
-void showQueueTime(int & time)
+void showQueueTime(int & time) 
 {
 	cout << "\n	Tiempo Quantum: " << time << " /s\n";
 }
@@ -203,7 +201,7 @@ void showQueueTime(int & time)
 
 void pushBack(Node *& cabeza, Node *& fin, Node *& item)
 {
-	if (!cabeza) {
+	if (!cabeza){
 		cabeza = item;
 		fin = item;
 	}
@@ -219,14 +217,14 @@ Node * popFront(Node *& cabeza, Node *& fin)
 {
 	Node * aux = cabeza;
 
-	if (cabeza)
+	if (cabeza == fin)
 	{
-		if (cabeza == fin)
-		{
-			cabeza = NULL;
-			fin = NULL;
-			return aux;
-		}
+		cabeza = NULL;
+		fin = NULL;
+	}
+
+	if (cabeza) 
+	{
 		cabeza = aux->next;
 		fin->next = cabeza;
 	}
@@ -242,4 +240,22 @@ Node * createNode(const int processTime, int nodeNumber)
 	nuevo->nodeArrival = nodeNumber;
 	nuevo->processTime = processTime;
 	return nuevo;
+}
+
+void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest) {
+	Node * aux = cabezaOri;
+	Node * nuevo = NULL;
+	bool continuar = true;
+	while (continuar && aux) {
+		nuevo = createNode(aux->processTime, aux->nodeArrival);
+		pushBack(cabezaDest, finDest, nuevo);
+		if (aux == finOri)
+			continuar = false;
+		aux = aux->next;
+	}
+}
+
+void freeList(Node *& cabeza, Node *& fin ) {
+	while (cabeza) 
+		delete popFront(cabeza, fin);
 }
