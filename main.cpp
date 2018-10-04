@@ -1,4 +1,4 @@
-
+#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<string>
 #include<stdlib.h>
@@ -166,8 +166,6 @@ void showList(Node * cabeza, Node * fin, bool useNames) {
 			cout << "	";
 		if (aux == fin)
 			continuar = false;
-		
-	
 		aux = aux->next;
 	}
 }
@@ -222,7 +220,6 @@ Node * popFront(Node *& cabeza, Node *& fin)
 		cabeza = NULL;
 		fin = NULL;
 	}
-
 	if (cabeza) 
 	{
 		cabeza = aux->next;
