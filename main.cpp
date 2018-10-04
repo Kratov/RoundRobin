@@ -1,10 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<string>
-
+#include<stdlib.h>
+#include<windows.h>
 using namespace std;
 
-constexpr int MIN_NUMBER = 1;
+const int MIN_NUMBER = 1;
 
 struct Node {
 	int processTime;
@@ -102,7 +103,7 @@ int main()
 }
 
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos) {
-	
+	system("cls");	
 	if (quantumTime <= 0)
 	{
 		cout << "\n	Debe ingresar un tiempo para procesar Quantum.\n	";
@@ -111,9 +112,12 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	if (cabeza)
 	{
-		printf("\n	========================	\n");
-		showList(cabeza, fin, true);							//Imprimo lista
-		printf("\n	========================	\n");
+		cout << "\n	Simulacion iniciada\n";
+		printf("\n	====== Procesando elementos ======	\n");
+		showList(cabeza, fin, true);					
+		printf("\n	==================================	\n");
+		Sleep(1500);
+		system("cls");
 	}
 	else {
 		cout << "\n	No existen procesos a simular.\n";
@@ -133,12 +137,17 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 				pushBack(cabeza, fin, front);  //Si no es verdadero todo el nodo y lo ingreso a la cola
 			if (cabeza)
 			{
-				printf("\n	========================	\n");
-				showList(cabeza, fin, true);						//Imprmimo lista despues de modificar
-				printf("\n	========================	\n");
+				cout << "\n	Simulacion iniciada\n";
+				printf("\n	====== Procesando elementos ======	\n");
+				showList(cabeza, fin, true);			
+		 		//Imprmimo lista despues de modificar
+				printf("\n	==================================	\n");
+				Sleep(1500);
+				system("cls");
 			}
 		}
 	}
+	cout << "\n	Simulacion terminada\n";
 }
 
 void showList(Node * cabeza, Node * fin, bool useNames) {
@@ -211,7 +220,6 @@ Node * popFront(Node *& cabeza, Node *& fin)
 		cabeza = NULL;
 		fin = NULL;
 	}
-
 	if (cabeza) 
 	{
 		cabeza = aux->next;
