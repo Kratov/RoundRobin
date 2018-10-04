@@ -125,22 +125,21 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	while (nNodos > 0 && cabeza)
 	{
-		burstNodeTime(cabeza, elapsedTime, quantumTime); //Restar cuantum a cabeza
-		if (Node * front = popFront(cabeza, fin)) //Extraer el nodo de la cabeza
+		burstNodeTime(cabeza, elapsedTime, quantumTime); 
+		if (Node * front = popFront(cabeza, fin)) 
 		{
-			if (front->bDelete)   //Si el nodo bDelete = true elimino el nodo
+			if (front->bDelete)   
 			{
 				delete front;
-				nNodos--; //Redusco el contador de nodos
+				nNodos--; 
 			}
 			else
-				pushBack(cabeza, fin, front);  //Si no es verdadero todo el nodo y lo ingreso a la cola
+				pushBack(cabeza, fin, front); 
 			if (cabeza)
 			{
 				cout << "\n	Simulacion iniciada\n";
 				printf("\n	====== Procesando elementos ======	\n");
 				showList(cabeza, fin, true);			
-		 		//Imprmimo lista despues de modificar
 				printf("\n	==================================	\n");
 				Sleep(1500);
 				system("cls");
