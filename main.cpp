@@ -6,6 +6,8 @@
 using namespace std;
 
 const int MIN_NUMBER = 1;
+const int WIN_HEIGHT = 800;
+const int WIN_WIDTH = 1200;
 
 struct Node {
 	int processTime;
@@ -19,17 +21,43 @@ void showList(Node * cabeza, Node * fin, bool useNames = false);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(int & time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
-void pushBack(Node *& cabeza, Node *& fin , Node *& item);
+void pushBack(Node *& cabeza, Node *& fin, Node *& item);
 void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest);
 void freeList(Node *& cabeza, Node *& fin);
+void moveCursor(const int x, const int y);
+void moveCursor(COORD pos);
+void setWindowSize(int width, int height, int left, int top);
+void setWindowSize(int width, int height);
+void setWindowAttribute(int option);
+COORD getConsoleCenter();
+COORD getCursorPosition();
+RECT getConsoleRect();
+CONSOLE_SCREEN_BUFFER_INFO getConsoleBufferInfo();
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
 int mainMenu()
 {
 	int temp = -1;
-	printf("\n	PROGRAMA ROUND ROBIN\n	1. Ingresar Quantum	\n	2. Ingresar procesos \n	3. Limpiar lista	\n	4. Simular	\n	0. Salir\n	Seleccion: ");
-	cin >> temp;
+	setWindowAttribute(10);
+	COORD center = getConsoleCenter();
+	COORD cursorPos;
+	center.X -= 10;
+	moveCursor(center.X - 30, 6); printf("=================================================================================");
+	moveCursor(center.X - 30, 8); printf("  ______   _____  _     _ __   _ ______	    ______   _____  ______  _____ __   _");
+	moveCursor(center.X - 30, 9); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
+	moveCursor(center.X - 30, 10); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
+	moveCursor(center.X - 30, 12); printf("=================================================================================");
+	moveCursor(center.X - 23, 14); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayo");
+	moveCursor(center.X, 18); printf("Menu:");
+	moveCursor(center.X, 20); printf("1. Ingresar Quantum");
+	moveCursor(center.X, 22); printf("2. Ingresar procesos");
+	moveCursor(center.X, 24); printf("3. Limpiar lista");
+	moveCursor(center.X, 26); printf("4. Simular");
+	moveCursor(center.X, 28); printf("0. Salir");
+	moveCursor(center.X, 30); printf("Seleccion: ");
+	cursorPos = getCursorPosition();
+	moveCursor(cursorPos.X, 30); cin >> temp;
 	if (cin.fail())
 	{
 		cin.clear();
@@ -43,26 +71,26 @@ int pedirNumero(int minNumero)
 	int num = 0;
 	do {
 		cin.clear();
-		cin.ignore(256,'\n');
+		cin.ignore(256, '\n');
 		printf("\n	Ingrese numero: ");
 		cin >> num;
 	} while (cin.fail() || num < minNumero);
 	return num;
 }
 
-int main() 
+int main()
 {
 	Node * cabeza, *fin, *cabezaCopia, *finCopia;
 	cabeza = fin = cabezaCopia = finCopia = NULL;
 	int op, elapsedTime, nNodos, nNodosCopia, queueTime;
 	elapsedTime = nNodos = nNodosCopia = queueTime = op = 0;
-
+	setWindowSize(WIN_WIDTH, WIN_HEIGHT);
 	do {
 		system("CLS");
 		if (cabeza || queueTime >= MIN_NUMBER || elapsedTime) {
 			printf("\n	============ PARAMETROS LISTA ROUND ROBBIN ============	\n\n");
 			if (queueTime >= MIN_NUMBER)
-				showQueueTime(queueTime);			
+				showQueueTime(queueTime);
 			if (elapsedTime >= MIN_NUMBER)
 				showElapsedTime(elapsedTime);
 			if (cabeza)
@@ -85,7 +113,7 @@ int main()
 			Node * item = createNode(pedirNumero(MIN_NUMBER), ++nNodos);
 			pushBack(cabeza, fin, item);
 		}
-			break;
+		break;
 		case 3:
 			nNodos = 0;
 			freeList(cabeza, fin);
@@ -102,8 +130,9 @@ int main()
 	return 0;
 }
 
-void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos) {
-	system("cls");	
+void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos)
+{
+	system("cls");
 	if (quantumTime <= 0)
 	{
 		cout << "\n	Debe ingresar un tiempo para procesar Quantum.\n	";
@@ -114,7 +143,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	{
 		cout << "\n	Simulacion iniciada\n";
 		printf("\n	====== Procesando elementos ======	\n");
-		showList(cabeza, fin, true);					
+		showList(cabeza, fin, true);
 		printf("\n	==================================	\n");
 		Sleep(1500);
 		system("cls");
@@ -125,21 +154,21 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 
 	while (nNodos > 0 && cabeza)
 	{
-		burstNodeTime(cabeza, elapsedTime, quantumTime); 
-		if (Node * front = popFront(cabeza, fin)) 
+		burstNodeTime(cabeza, elapsedTime, quantumTime);
+		if (Node * front = popFront(cabeza, fin))
 		{
-			if (front->bDelete)   
+			if (front->bDelete)
 			{
 				delete front;
-				nNodos--; 
+				nNodos--;
 			}
 			else
-				pushBack(cabeza, fin, front); 
+				pushBack(cabeza, fin, front);
 			if (cabeza)
 			{
 				cout << "\n	Simulacion iniciada\n";
 				printf("\n	====== Procesando elementos ======	\n");
-				showList(cabeza, fin, true);			
+				showList(cabeza, fin, true);
 				printf("\n	==================================	\n");
 				Sleep(1500);
 				system("cls");
@@ -149,7 +178,8 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	cout << "\n	Simulacion terminada\n";
 }
 
-void showList(Node * cabeza, Node * fin, bool useNames) {
+void showList(Node * cabeza, Node * fin, bool useNames)
+{
 	Node * aux = cabeza;
 	bool continuar = true;
 	while (continuar && cabeza)
@@ -169,12 +199,12 @@ void showList(Node * cabeza, Node * fin, bool useNames) {
 	}
 }
 
-void showElapsedTime(const int elapsedTime) 
+void showElapsedTime(const int elapsedTime)
 {
-	cout << "\n	Tiempo transcurrido (Ultima simulacion): "<<elapsedTime<<" /s\n"; 
+	cout << "\n	Tiempo transcurrido (Ultima simulacion): " << elapsedTime << " /s\n";
 }
 
-void burstNodeTime(Node * item, int & elapsedTime, const int queueTime) 
+void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
 {
 	if (item)
 		if (queueTime >= item->processTime)
@@ -190,7 +220,7 @@ void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
 		}
 }
 
-void showQueueTime(int & time) 
+void showQueueTime(int & time)
 {
 	cout << "\n	Tiempo Quantum: " << time << " /s\n";
 }
@@ -198,7 +228,7 @@ void showQueueTime(int & time)
 
 void pushBack(Node *& cabeza, Node *& fin, Node *& item)
 {
-	if (!cabeza){
+	if (!cabeza) {
 		cabeza = item;
 		fin = item;
 	}
@@ -219,7 +249,7 @@ Node * popFront(Node *& cabeza, Node *& fin)
 		cabeza = NULL;
 		fin = NULL;
 	}
-	if (cabeza) 
+	if (cabeza)
 	{
 		cabeza = aux->next;
 		fin->next = cabeza;
@@ -238,7 +268,8 @@ Node * createNode(const int processTime, int nodeNumber)
 	return nuevo;
 }
 
-void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest) {
+void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest)
+{
 	Node * aux = cabezaOri;
 	Node * nuevo = NULL;
 	bool continuar = true;
@@ -251,7 +282,59 @@ void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& fin
 	}
 }
 
-void freeList(Node *& cabeza, Node *& fin ) {
-	while (cabeza) 
+void freeList(Node *& cabeza, Node *& fin)
+{
+	while (cabeza)
 		delete popFront(cabeza, fin);
+}
+
+void moveCursor(const int x, const int y)
+{
+	COORD dwPos;
+	dwPos.X = x;
+	dwPos.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), dwPos);
+}
+
+void moveCursor(COORD pos) {
+	moveCursor(pos.X, pos.Y);
+}
+
+COORD getConsoleCenter() {
+	COORD dim = getConsoleBufferInfo().dwSize;
+	dim.X = dim.X / 2;
+	dim.Y = dim.Y / 2;
+	return dim;
+}
+
+CONSOLE_SCREEN_BUFFER_INFO getConsoleBufferInfo() {
+	CONSOLE_SCREEN_BUFFER_INFO  lpBufferInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &lpBufferInfo);
+	return lpBufferInfo;
+}
+
+COORD getCursorPosition() {
+	return getConsoleBufferInfo().dwCursorPosition;
+}
+
+void setWindowSize(int width, int height)
+{
+	RECT rWindow = getConsoleRect();
+	MoveWindow(GetConsoleWindow(), rWindow.left, rWindow.top, width, height, true);
+}
+
+void setWindowSize(int width, int height, int left, int top)
+{
+	MoveWindow(GetConsoleWindow(), left, top, width, height, true);
+}
+
+RECT getConsoleRect() 
+{
+	RECT rWindow;
+	GetWindowRect(GetConsoleWindow(), & rWindow);
+	return rWindow;
+}
+
+void setWindowAttribute(int option) {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), option);
 }
