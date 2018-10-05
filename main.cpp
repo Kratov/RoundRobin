@@ -1,13 +1,16 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
+#include<iomanip>
 #include<string>
 #include<stdlib.h>
 #include<windows.h>
+
 using namespace std;
 
 const int MIN_NUMBER = 1;
 const int WIN_HEIGHT = 800;
 const int WIN_WIDTH = 1200;
+const int MAX_NODES = 14;
 
 struct Node {
 	int processTime;
@@ -17,9 +20,9 @@ struct Node {
 };
 
 void showElapsedTime(const int elapsedTime);
-void showList(Node * cabeza, Node * fin, bool useNames = false);
+void showList(Node * cabeza, Node * fin, bool useOffsetJump = false);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
-void showQueueTime(int & time);
+void showQueueTime(const int time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
 void pushBack(Node *& cabeza, Node *& fin, Node *& item);
 void copyList(Node *& cabezaOri, Node *& finOri, Node *& cabezaDest, Node *& finDest);
@@ -29,6 +32,12 @@ void moveCursor(COORD pos);
 void setWindowSize(int width, int height, int left, int top);
 void setWindowSize(int width, int height);
 void setWindowAttribute(int option);
+void showSuccess(string message, COORD pos);
+void showSuccess(string message, int x, int y);
+void showInfo(string message, COORD pos);
+void showInfo(string message, int x, int y);
+void showError(string message, COORD pos);
+void showError(string message, int x, int y);
 COORD getConsoleCenter();
 COORD getCursorPosition();
 RECT getConsoleRect();
@@ -36,82 +45,115 @@ CONSOLE_SCREEN_BUFFER_INFO getConsoleBufferInfo();
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
-int mainMenu()
+int mainMenu(bool & error)
 {
-	int temp = -1;
-	setWindowAttribute(10);
+	int temp = -1;	
+	setWindowAttribute(10 | FOREGROUND_INTENSITY);
 	COORD center = getConsoleCenter();
 	COORD cursorPos;
 	center.X -= 10;
-	moveCursor(center.X - 30, 6); printf("=================================================================================");
-	moveCursor(center.X - 30, 8); printf("  ______   _____  _     _ __   _ ______	    ______   _____  ______  _____ __   _");
-	moveCursor(center.X - 30, 9); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
-	moveCursor(center.X - 30, 10); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
-	moveCursor(center.X - 30, 12); printf("=================================================================================");
-	moveCursor(center.X - 23, 14); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayo");
-	moveCursor(center.X, 18); printf("Menu:");
-	moveCursor(center.X, 20); printf("1. Ingresar Quantum");
-	moveCursor(center.X, 22); printf("2. Ingresar procesos");
-	moveCursor(center.X, 24); printf("3. Limpiar lista");
-	moveCursor(center.X, 26); printf("4. Simular");
-	moveCursor(center.X, 28); printf("0. Salir");
-	moveCursor(center.X, 30); printf("Seleccion: ");
+	moveCursor(center.X - 30, 17); printf("=================================================================================");
+	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf("  ______   _____  _     _ __   _ ______	    ______   _____  ______  _____ __   _");
+	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
+	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
+	moveCursor(center.X - 30, getCursorPosition().Y + 2); printf("=================================================================================");
+	moveCursor(center.X - 23, getCursorPosition().Y + 2); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayo");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("Menu:");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("1. Ingresar Quantum");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("2. Ingresar procesos");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("3. Limpiar lista");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("4. Simular");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("0. Salir");
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("Seleccion: ");
 	cursorPos = getCursorPosition();
-	moveCursor(cursorPos.X, 30); cin >> temp;
+	moveCursor(cursorPos.X, getCursorPosition().Y); cin >> setw(1) >> temp;
 	if (cin.fail())
 	{
 		cin.clear();
-		cin.ignore();
+		cin.ignore(256, '\n');
+		error = true;
 	}
 	return temp;
 }
 
-int pedirNumero(int minNumero)
+bool pedirNumero(int minNumero, int & num)
 {
-	int num = 0;
-	do {
+	COORD center = getConsoleCenter();
+	center.X -= 10;
+	moveCursor(center.X, getCursorPosition().Y + 2); printf("Ingrese numero: ");
+	cin >> num;
+	if (cin.fail())
+	{
 		cin.clear();
 		cin.ignore(256, '\n');
-		printf("\n	Ingrese numero: ");
-		cin >> num;
-	} while (cin.fail() || num < minNumero);
-	return num;
+		showError("Tipo de dato erroneo - intentelo de nuevo.", center.X - 15, getCursorPosition().Y + 3);
+		return false;
+	}
+	return true;
 }
 
 int main()
 {
+	bool inputFail = false;
 	Node * cabeza, *fin, *cabezaCopia, *finCopia;
 	cabeza = fin = cabezaCopia = finCopia = NULL;
-	int op, elapsedTime, nNodos, nNodosCopia, queueTime;
-	elapsedTime = nNodos = nNodosCopia = queueTime = op = 0;
+	int op, elapsedTime, nNodos, nNodosCopia, queueTime, nAuxiliar;
+	elapsedTime = nNodos = nNodosCopia = queueTime = op = nAuxiliar = 0;
 	setWindowSize(WIN_WIDTH, WIN_HEIGHT);
+	COORD center = getConsoleCenter();
+	center.X -= 10;
 	do {
+		inputFail = false;
 		system("CLS");
 		if (cabeza || queueTime >= MIN_NUMBER || elapsedTime) {
-			printf("\n	============ PARAMETROS LISTA ROUND ROBBIN ============	\n\n");
+			setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
+			moveCursor(center.X - 35, getCursorPosition().Y + 2); printf("================================= PARAMETROS LISTA ROUND ROBBIN =================================");
 			if (queueTime >= MIN_NUMBER)
 				showQueueTime(queueTime);
 			if (elapsedTime >= MIN_NUMBER)
 				showElapsedTime(elapsedTime);
 			if (cabeza)
 			{
-				cout << "\n	====== Lista de procesos ======\n\n";
+				moveCursor(center.X - 35, getCursorPosition().Y + 2); cout << "======================================= Lista de procesos =======================================";
 				showList(cabeza, fin, true);
-				cout << "\n\n	====== Fin Lista procesos ======\n\n";
+				moveCursor(center.X - 35, getCursorPosition().Y + 2); cout << "======================================= Fin Lista procesos =======================================";
 			}
-			printf("\n	============ FIN PARTAMETROS ROUND ROBIN ============	\n\n");
+			moveCursor(center.X - 35, getCursorPosition().Y + 2); printf("================================== FIN PARTAMETROS ROUND ROBIN ==================================");
+			setWindowAttribute(10 | FOREGROUND_INTENSITY);
 		}
-		switch (op = mainMenu())
+		switch (op = mainMenu(inputFail))
 		{
-		case 1:
-			cout << "	Ingrese tiempo de procesamiento Quantum. ";
-			queueTime = pedirNumero(MIN_NUMBER);
+		case 1: 
+		{
+			COORD center = getConsoleCenter();
+			center.X -= 10;
+			moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	========================================= ";
+			moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	Usted ingreso la opcion 1 (Ingreso Quantum):";
+			moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	========================================= ";
+			moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	Ingrese tiempo de procesamiento Quantum. ";
+			pedirNumero(MIN_NUMBER, queueTime);
+		}
 			break;
 		case 2:
 		{
-			cout << "	Ingrese tiempo de nuevo proceso. ";
-			Node * item = createNode(pedirNumero(MIN_NUMBER), ++nNodos);
-			pushBack(cabeza, fin, item);
+			COORD center = getConsoleCenter();
+			center.X -= 10;
+			if (nNodos >= MAX_NODES) {
+				showError("No puede ingresar mas procesos.", getConsoleCenter().X - 20, getCursorPosition().Y + 2);
+				cin.ignore();
+				cin.get();
+			}
+			else
+			{
+				moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	========================================= ";
+				moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	Usted ingreso la opcion 2 (Ingreso Proceso):";
+				moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	========================================= ";
+				moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	Ingrese tiempo de nuevo proceso. ";
+				if (pedirNumero(MIN_NUMBER, nAuxiliar)) {
+					Node * item = createNode(nAuxiliar, ++nNodos);
+					pushBack(cabeza, fin, item);
+				}
+			}
 		}
 		break;
 		case 3:
@@ -125,31 +167,41 @@ int main()
 			break;
 		}
 		printf("\n");
-		system("PAUSE");
-	} while (op != 0);
+		cin.get();
+	} while (op != 0 || inputFail);
 	return 0;
 }
 
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos)
 {
+	COORD center = getConsoleCenter();
+	center.X -= 10;
 	system("cls");
 	if (quantumTime <= 0)
 	{
-		cout << "\n	Debe ingresar un tiempo para procesar Quantum.\n	";
+		showError("Debe ingresar un tiempo para procesar Quantum.", center.X - 15, getCursorPosition().Y + 2);
+		cin.ignore();
+		cin.get();
 		return;
 	}
 
 	if (cabeza)
 	{
-		cout << "\n	Simulacion iniciada\n";
-		printf("\n	====== Procesando elementos ======	\n");
+		showInfo("Simulacion iniciada", center.X - 5, getCursorPosition().Y + 2);
+		setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
+		showQueueTime(quantumTime);
+		setWindowAttribute(10 | FOREGROUND_INTENSITY);
+		moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("======================================= Procesando elementos =======================================");
 		showList(cabeza, fin, true);
-		printf("\n	==================================	\n");
+		moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("====================================================================================================");
 		Sleep(1500);
 		system("cls");
 	}
 	else {
-		cout << "\n	No existen procesos a simular.\n";
+		showError("No existen procesos a simular.", center.X - 5, getCursorPosition().Y + 2);
+		cin.ignore();
+		cin.get();
+		return;
 	}
 
 	while (nNodos > 0 && cabeza)
@@ -166,42 +218,57 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 				pushBack(cabeza, fin, front);
 			if (cabeza)
 			{
-				cout << "\n	Simulacion iniciada\n";
-				printf("\n	====== Procesando elementos ======	\n");
+				
+				showInfo("Simulacion iniciada", center.X - 5, getCursorPosition().Y + 2);
+				setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
+				showQueueTime(quantumTime);
+				setWindowAttribute(10 | FOREGROUND_INTENSITY);
+				moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("======================================= Procesando elementos =======================================");
 				showList(cabeza, fin, true);
-				printf("\n	==================================	\n");
+				moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("====================================================================================================");
 				Sleep(1500);
 				system("cls");
 			}
 		}
 	}
-	cout << "\n	Simulacion terminada\n";
+	showSuccess("Simulacion terminada", center.X - 5, getCursorPosition().Y + 2);
+	cin.ignore();
+	cin.get();
 }
 
-void showList(Node * cabeza, Node * fin, bool useNames)
+void showList(Node * cabeza, Node * fin, bool useOffsetJump)
 {
 	Node * aux = cabeza;
 	bool continuar = true;
+	COORD center = getConsoleCenter();
+	center.X -= 10;
+	moveCursor(center.X, getCursorPosition().Y + 2);
+	int offset = 58;
 	while (continuar && cabeza)
 	{
-		if (useNames)
-			cout << "	" << "P" << aux->nodeArrival << "(";
-		else
-			cout << "	";
+		if (useOffsetJump)
+		{
+			if (getCursorPosition().X >= 140)
+			{
+				offset = 58;
+				moveCursor(center.X - offset, getCursorPosition().Y + 1);
+			}
+		}
+		moveCursor(center.X - offset, getCursorPosition().Y); cout << "" << "P" << aux->nodeArrival << "(";
 		cout << aux->processTime;
-		if (useNames)
-			cout << ")	";
-		else
-			cout << "	";
+		cout << ")";
 		if (aux == fin)
 			continuar = false;
 		aux = aux->next;
+		offset -= 10;
 	}
 }
 
 void showElapsedTime(const int elapsedTime)
 {
-	cout << "\n	Tiempo transcurrido (Ultima simulacion): " << elapsedTime << " /s\n";
+	COORD center = getConsoleCenter();
+	center.X -= 10;
+	moveCursor(center.X - 15, getCursorPosition().Y + 1); cout << "Tiempo transcurrido (Ultima simulacion): " << elapsedTime << " /s";
 }
 
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
@@ -220,9 +287,11 @@ void burstNodeTime(Node * item, int & elapsedTime, const int queueTime)
 		}
 }
 
-void showQueueTime(int & time)
+void showQueueTime(const int time)
 {
-	cout << "\n	Tiempo Quantum: " << time << " /s\n";
+	COORD center = getConsoleCenter();
+	center.X -= 10;
+	moveCursor(center.X, getCursorPosition().Y + 2); cout << "Tiempo Quantum: " << time << " /s";
 }
 
 
@@ -337,4 +406,40 @@ RECT getConsoleRect()
 
 void setWindowAttribute(int option) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), option);
+}
+
+void showError(string message, int x, int y) 
+{
+	setWindowAttribute(14 | BACKGROUND_RED | FOREGROUND_INTENSITY);
+	moveCursor(x,y);cout << "Error: " << message << endl;
+	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+}
+
+void showError(string message, COORD pos) 
+{
+	showError(message, pos.X, pos.Y);
+}
+
+void showSuccess(string message, COORD pos) 
+{
+	showSuccess(message, pos.X, pos.Y);
+}
+
+void showSuccess(string message, int x, int y) 
+{
+	setWindowAttribute(9 | BACKGROUND_GREEN | FOREGROUND_INTENSITY);
+	moveCursor(x, y); cout << "Exitoso: " << message << endl;
+	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+}
+
+void showInfo(string message, COORD pos) 
+{
+	showInfo(message, pos.X, pos.Y);
+}
+
+void showInfo(string message, int x, int y) 
+{
+	setWindowAttribute(23 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
+	moveCursor(x, y); cout << "Informacion: " << message << endl;
+	setWindowAttribute(10 | FOREGROUND_INTENSITY);
 }
