@@ -53,7 +53,7 @@ int mainMenu(bool & error)
 	COORD cursorPos;
 	center.X -= 10;
 	moveCursor(center.X - 30, 17); printf("=================================================================================");
-	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf("  ______   _____  _     _ __   _ ______	    ______   _____  ______  _____ __   _");
+	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf("  ______   _____  _     _ __   _ ______     ______   _____  ______  _____ __   _");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
 	moveCursor(center.X - 30, getCursorPosition().Y + 2); printf("=================================================================================");
