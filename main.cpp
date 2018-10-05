@@ -8,8 +8,8 @@
 using namespace std;
 
 const int MIN_NUMBER = 1;
-const int WIN_HEIGHT = 800;
-const int WIN_WIDTH = 1200;
+const int WIN_HEIGHT = 1080;
+const int WIN_WIDTH = 1920;
 const int MAX_NODES = 14;
 
 struct Node {
@@ -99,7 +99,7 @@ int main()
 	cabeza = fin = cabezaCopia = finCopia = NULL;
 	int op, elapsedTime, nNodos, nNodosCopia, queueTime, nAuxiliar;
 	elapsedTime = nNodos = nNodosCopia = queueTime = op = nAuxiliar = 0;
-	setWindowSize(WIN_WIDTH, WIN_HEIGHT);
+	setWindowSize(WIN_WIDTH, WIN_HEIGHT, 0, 0);
 	COORD center = getConsoleCenter();
 	center.X -= 10;
 	do {
@@ -248,7 +248,7 @@ void showList(Node * cabeza, Node * fin, bool useOffsetJump)
 	{
 		if (useOffsetJump)
 		{
-			if (getCursorPosition().X >= 140)
+			if (getCursorPosition().X >= WIN_WIDTH - 140)
 			{
 				offset = 58;
 				moveCursor(center.X - offset, getCursorPosition().Y + 1);
