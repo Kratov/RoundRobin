@@ -3,14 +3,11 @@
 #include<iomanip>
 #include<string>
 #include<stdlib.h>
+#include<stdio.h>
 #include<windows.h>
 
-using namespace std;
 
-const int MIN_NUMBER = 1;
-const int WIN_HEIGHT = 1080;
-const int WIN_WIDTH = 1920;
-const int MAX_NODES = 14;
+using namespace std;
 
 struct Node {
 	int processTime;
@@ -19,8 +16,9 @@ struct Node {
 	bool bDelete;
 };
 
+void clockAnimation(Node * cabeza, Node * fin, const int quantumTime);
 void showElapsedTime(const int elapsedTime);
-void showList(Node * cabeza, Node * fin, bool useOffsetJump = false);
+void showList(Node * cabeza, Node * fin, int startBorderOffset, const int itemSeparation, const int endBorderDifference, const bool useOffsetJump);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
 void showQueueTime(const int time);
 void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, int & elapsedTime, int & nNodos);
@@ -45,14 +43,24 @@ CONSOLE_SCREEN_BUFFER_INFO getConsoleBufferInfo();
 Node * createNode(const int processTime, int nodeNumber);
 Node * popFront(Node *& cabeza, Node *& fin);
 
-int mainMenu(bool & error)
+const int MIN_NUMBER = 1;
+const int MAX_NODES = 100;
+const int MAX_RIGHT_BORDER = 170;
+const int MIN_LEFT_BORDER = 40;
+const int ITEM_SEPARATION = 10;
+const int CONSOLE_BASE_ATTRIB = 10;
+const int WIN_HEIGHT = GetSystemMetrics(SM_CYSCREEN);
+const int WIN_WIDTH = GetSystemMetrics(SM_CXSCREEN);
+const int SLEEP_ANIMATION = 1000;
+
+int mainMenu(bool & error, int yAxisStart)
 {
 	int temp = -1;
-	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+	setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 	COORD center = getConsoleCenter();
 	COORD cursorPos;
 	center.X -= 10;
-	moveCursor(center.X - 30, 17); printf("=================================================================================");
+	moveCursor(center.X - 30, yAxisStart); printf("=================================================================================");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf("  ______   _____  _     _ __   _ ______     ______   _____  ______  _____ __   _");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
@@ -100,7 +108,7 @@ int main()
 	cabeza = fin = cabezaCopia = finCopia = NULL;
 	int op, elapsedTime, nNodos, nNodosCopia, queueTime, nAuxiliar;
 	elapsedTime = nNodos = nNodosCopia = queueTime = op = nAuxiliar = 0;
-	setWindowSize(WIN_WIDTH, WIN_HEIGHT, 0, 0);
+	setWindowSize(WIN_WIDTH, WIN_HEIGHT, getConsoleBufferInfo().srWindow.Left, getConsoleBufferInfo().srWindow.Top);
 	COORD center = getConsoleCenter();
 	center.X -= 10;
 	do {
@@ -116,13 +124,13 @@ int main()
 			if (cabeza)
 			{
 				moveCursor(center.X - 35, getCursorPosition().Y + 2); cout << "======================================= Lista de procesos =======================================";
-				showList(cabeza, fin, true);
+				showList(cabeza, fin, MIN_LEFT_BORDER, ITEM_SEPARATION, MAX_RIGHT_BORDER, true);
 				moveCursor(center.X - 35, getCursorPosition().Y + 2); cout << "======================================= Fin Lista procesos =======================================";
 			}
 			moveCursor(center.X - 35, getCursorPosition().Y + 2); printf("================================== FIN PARTAMETROS ROUND ROBIN ==================================");
-			setWindowAttribute(10 | FOREGROUND_INTENSITY);
+			setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 		}
-		switch (op = mainMenu(inputFail))
+		switch (op = mainMenu(inputFail, getCursorPosition().Y + 2))
 		{
 		case 1:
 		{
@@ -199,11 +207,11 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 		showInfo("Simulacion iniciada", center.X - 5, getCursorPosition().Y + 2);
 		setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
 		showQueueTime(quantumTime);
-		setWindowAttribute(10 | FOREGROUND_INTENSITY);
+		setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 		moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("======================================= Procesando elementos =======================================");
-		showList(cabeza, fin, true);
+		showList(cabeza, fin, MIN_LEFT_BORDER, ITEM_SEPARATION, MAX_RIGHT_BORDER, true);
 		moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("====================================================================================================");
-		Sleep(1500);
+		Sleep(SLEEP_ANIMATION);
 		system("cls");
 	}
 	else {
@@ -231,11 +239,11 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 				showInfo("Simulacion iniciada", center.X - 5, getCursorPosition().Y + 2);
 				setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
 				showQueueTime(quantumTime);
-				setWindowAttribute(10 | FOREGROUND_INTENSITY);
+				setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 				moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("======================================= Procesando elementos =======================================");
-				showList(cabeza, fin, true);
+				showList(cabeza, fin, MIN_LEFT_BORDER, ITEM_SEPARATION, MAX_RIGHT_BORDER, true);
 				moveCursor(center.X - 35, getCursorPosition().Y + 4); printf("====================================================================================================");
-				Sleep(1500);
+				Sleep(SLEEP_ANIMATION);
 				system("cls");
 			}
 		}
@@ -245,7 +253,35 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 	cin.get();
 }
 
-void showList(Node * cabeza, Node * fin, bool useOffsetJump)
+void showList(Node * cabeza, Node * fin, int startBorderOffset, const int itemSeparation, const int endBorderDifference, const bool useOffsetJump)
+{
+	Node * aux = cabeza;
+	bool continuar = true;
+	COORD center = getConsoleCenter();
+	center.X -= itemSeparation;
+	moveCursor(center.X, getCursorPosition().Y + 2);
+	int offset = startBorderOffset;
+	while (continuar && cabeza)
+	{
+		if (useOffsetJump)
+		{
+			if (getCursorPosition().X >= endBorderDifference)
+			{
+				offset = startBorderOffset;
+				moveCursor(center.X - offset, getCursorPosition().Y + 1);
+			}
+		}
+		moveCursor(center.X - offset, getCursorPosition().Y); cout << "" << "P" << aux->nodeArrival << "(";
+		cout << aux->processTime;
+		cout << ")";
+		if (aux == fin)
+			continuar = false;
+		aux = aux->next;
+		offset -= itemSeparation;
+	}
+}
+
+void clockAnimation(Node * cabeza, Node * fin, const int quantumTime)
 {
 	Node * aux = cabeza;
 	bool continuar = true;
@@ -255,14 +291,6 @@ void showList(Node * cabeza, Node * fin, bool useOffsetJump)
 	int offset = 58;
 	while (continuar && cabeza)
 	{
-		if (useOffsetJump)
-		{
-			if (getCursorPosition().X >= WIN_WIDTH - 140)
-			{
-				offset = 58;
-				moveCursor(center.X - offset, getCursorPosition().Y + 1);
-			}
-		}
 		moveCursor(center.X - offset, getCursorPosition().Y); cout << "" << "P" << aux->nodeArrival << "(";
 		cout << aux->processTime;
 		cout << ")";
@@ -421,7 +449,7 @@ void showError(string message, int x, int y)
 {
 	setWindowAttribute(14 | BACKGROUND_RED | FOREGROUND_INTENSITY);
 	moveCursor(x, y); cout << "Error: " << message << endl;
-	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+	setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 }
 
 void showError(string message, COORD pos)
@@ -438,7 +466,7 @@ void showSuccess(string message, int x, int y)
 {
 	setWindowAttribute(9 | BACKGROUND_GREEN | FOREGROUND_INTENSITY);
 	moveCursor(x, y); cout << "Exitoso: " << message << endl;
-	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+	setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 }
 
 void showInfo(string message, COORD pos)
@@ -450,5 +478,5 @@ void showInfo(string message, int x, int y)
 {
 	setWindowAttribute(23 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
 	moveCursor(x, y); cout << "Informacion: " << message << endl;
-	setWindowAttribute(10 | FOREGROUND_INTENSITY);
+	setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 }
