@@ -64,7 +64,7 @@ int mainMenu(bool & error, int yAxisStart)
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |_____/  |     | |     | | \\  | |     \\   |_____/  |     | |_____]   |   | \\  |");
 	moveCursor(center.X - 30, getCursorPosition().Y + 1); printf(" |    \\_  |_____| |_____| |  \\_| |_____/   |    \\_  |_____| |_____] __|__ |  \\_|");
 	moveCursor(center.X - 30, getCursorPosition().Y + 2); printf("=================================================================================");
-	moveCursor(center.X - 23, getCursorPosition().Y + 2); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayo");
+	moveCursor(center.X - 23, getCursorPosition().Y + 2); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayo - V1.0");
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("Menu:");
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("1. Ingresar Quantum");
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("2. Ingresar procesos");
