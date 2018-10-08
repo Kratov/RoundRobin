@@ -16,7 +16,6 @@ struct Node {
 	bool bDelete;
 };
 
-void clockAnimation(Node * cabeza, Node * fin, const int quantumTime);
 void showElapsedTime(const int elapsedTime);
 void showList(Node * cabeza, Node * fin, int startBorderOffset, const int itemSeparation, const int endBorderDifference, const bool useOffsetJump);
 void burstNodeTime(Node * item, int & elapsedTime, const int queueTime);
@@ -278,26 +277,6 @@ void showList(Node * cabeza, Node * fin, int startBorderOffset, const int itemSe
 			continuar = false;
 		aux = aux->next;
 		offset -= itemSeparation;
-	}
-}
-
-void clockAnimation(Node * cabeza, Node * fin, const int quantumTime)
-{
-	Node * aux = cabeza;
-	bool continuar = true;
-	COORD center = getConsoleCenter();
-	center.X -= 10;
-	moveCursor(center.X, getCursorPosition().Y + 2);
-	int offset = 58;
-	while (continuar && cabeza)
-	{
-		moveCursor(center.X - offset, getCursorPosition().Y); cout << "" << "P" << aux->nodeArrival << "(";
-		cout << aux->processTime;
-		cout << ")";
-		if (aux == fin)
-			continuar = false;
-		aux = aux->next;
-		offset -= 10;
 	}
 }
 
