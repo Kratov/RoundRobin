@@ -67,7 +67,7 @@ int mainMenu(bool & error, int yAxisStart)
 	setWindowAttribute(12 | FOREGROUND_INTENSITY);
 	moveCursor(center.X - 23, getCursorPosition().Y + 2); printf("Authors: Jaime Enrique Zamora Munar, William Andres Garcia Robayos - ");
 	setWindowAttribute(14 | FOREGROUND_INTENSITY);
-	moveCursor(getCursorPosition().X, getCursorPosition().Y); printf("V1.0");
+	moveCursor(getCursorPosition()); printf("V1.0");
 	setWindowAttribute(CONSOLE_BASE_ATTRIB | FOREGROUND_INTENSITY);
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("Menu:");
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("1. Ingresar Quantum");
