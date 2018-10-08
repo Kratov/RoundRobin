@@ -47,7 +47,7 @@ Node * popFront(Node *& cabeza, Node *& fin);
 
 int mainMenu(bool & error)
 {
-	int temp = -1;	
+	int temp = -1;
 	setWindowAttribute(10 | FOREGROUND_INTENSITY);
 	COORD center = getConsoleCenter();
 	COORD cursorPos;
@@ -71,6 +71,7 @@ int mainMenu(bool & error)
 	{
 		cin.clear();
 		cin.ignore(256, '\n');
+		showError("Error de tipo de dato, ingrese de nuevo.", center.X - 10, getCursorPosition().Y + 2);
 		error = true;
 	}
 	return temp;
@@ -123,7 +124,7 @@ int main()
 		}
 		switch (op = mainMenu(inputFail))
 		{
-		case 1: 
+		case 1:
 		{
 			COORD center = getConsoleCenter();
 			center.X -= 10;
@@ -133,7 +134,7 @@ int main()
 			moveCursor(center.X - 15, getCursorPosition().Y + 2); cout << "	Ingrese tiempo de procesamiento Quantum. ";
 			pedirNumero(MIN_NUMBER, queueTime);
 		}
-			break;
+		break;
 		case 2:
 		{
 			COORD center = getConsoleCenter();
@@ -164,6 +165,14 @@ int main()
 			freeList(cabezaCopia, finCopia);
 			copyList(cabeza, fin, cabezaCopia, finCopia);
 			initializeSimulation(cabezaCopia, finCopia, queueTime, elapsedTime = 0, nNodosCopia = nNodos);
+			break;
+		default:
+			if (!inputFail && op != 0)
+			{
+				showError("Opcion no existe.", center.X - 10, getCursorPosition().Y + 2);
+				cin.ignore();
+
+			}
 			break;
 		}
 		printf("\n");
@@ -218,7 +227,7 @@ void initializeSimulation(Node *& cabeza, Node *& fin, const int quantumTime, in
 				pushBack(cabeza, fin, front);
 			if (cabeza)
 			{
-				
+
 				showInfo("Simulacion iniciada", center.X - 5, getCursorPosition().Y + 2);
 				setWindowAttribute(14 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
 				showQueueTime(quantumTime);
@@ -397,10 +406,10 @@ void setWindowSize(int width, int height, int left, int top)
 	MoveWindow(GetConsoleWindow(), left, top, width, height, true);
 }
 
-RECT getConsoleRect() 
+RECT getConsoleRect()
 {
 	RECT rWindow;
-	GetWindowRect(GetConsoleWindow(), & rWindow);
+	GetWindowRect(GetConsoleWindow(), &rWindow);
 	return rWindow;
 }
 
@@ -408,36 +417,36 @@ void setWindowAttribute(int option) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), option);
 }
 
-void showError(string message, int x, int y) 
+void showError(string message, int x, int y)
 {
 	setWindowAttribute(14 | BACKGROUND_RED | FOREGROUND_INTENSITY);
-	moveCursor(x,y);cout << "Error: " << message << endl;
+	moveCursor(x, y); cout << "Error: " << message << endl;
 	setWindowAttribute(10 | FOREGROUND_INTENSITY);
 }
 
-void showError(string message, COORD pos) 
+void showError(string message, COORD pos)
 {
 	showError(message, pos.X, pos.Y);
 }
 
-void showSuccess(string message, COORD pos) 
+void showSuccess(string message, COORD pos)
 {
 	showSuccess(message, pos.X, pos.Y);
 }
 
-void showSuccess(string message, int x, int y) 
+void showSuccess(string message, int x, int y)
 {
 	setWindowAttribute(9 | BACKGROUND_GREEN | FOREGROUND_INTENSITY);
 	moveCursor(x, y); cout << "Exitoso: " << message << endl;
 	setWindowAttribute(10 | FOREGROUND_INTENSITY);
 }
 
-void showInfo(string message, COORD pos) 
+void showInfo(string message, COORD pos)
 {
 	showInfo(message, pos.X, pos.Y);
 }
 
-void showInfo(string message, int x, int y) 
+void showInfo(string message, int x, int y)
 {
 	setWindowAttribute(23 | BACKGROUND_BLUE | FOREGROUND_INTENSITY);
 	moveCursor(x, y); cout << "Informacion: " << message << endl;
