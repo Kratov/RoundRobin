@@ -94,7 +94,7 @@ bool pedirNumero(int minNumero, int & num)
 	center.X -= 10;
 	moveCursor(center.X, getCursorPosition().Y + 2); printf("Ingrese numero: ");
 	cin >> num;
-	if (cin.fail())
+	if (cin.fail() || num < MIN_NUMBER)
 	{
 		cin.clear();
 		cin.ignore(256, '\n');
